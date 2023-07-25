@@ -1,0 +1,111 @@
+spring:
+  datasource:
+    name: microService
+    url: jdbc:mariadb://localhost:3306/microService
+    username: root
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  config:
+    import: configserver:http://localhost:8085
+  application:
+    name: USER-SERVICE
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-93142302.okta.com/oauth2/default
+      client:
+        registration:
+          my-internal-client:
+            provider: okta
+            authorization-grant-type: client_credentials
+            scope: internal
+            client-id: 0oaafubfihQrvpcYw5d7
+            client-secret: ZLhgHSiN_OBKkEq9z8MFvFXxR24MaDQkNiMVO3GO8lAtQATGwS452DHLWok2Y1go
+        provider:
+          okta:
+            issuer-uri: https://dev-93142302.okta.com/oauth2/default
+
+
+
+#
+#  profiles:
+#    active: prod
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+
+# eureka:
+#   instance:
+#     prefer-ip-address: true
+#   client:
+#     fetch-registry: true
+#     register-with-eureka: true
+#     service-url:
+#       defaultZone: http://localhost:8761/eureka
+#
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingHotelBeaker:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 6s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+
+  retry:
+    instance:
+      ratingHotelBeaker:
+        max-attempts: 5
+        wait-duration: 1s
+
+
+  ratelimiter:
+    instance:
+      userRateLimiter:
+        limit-refresh-period: 4s
+        limit-for-period: 2
+        timeout-duration: 0s
+
+
+okta:
+  oauth2:
+    issuer: https://dev-93142302.okta.com/oauth2/default
+    audience: api://default
+
+
+
+
+
+
+
+
+
+
